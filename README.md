@@ -1,62 +1,50 @@
-# CRYSTALS-Kyber Python Implementation
+# Implémentation de CRYSTALS-Kyber en Python 
 
-This repository contains a pure python implementation of CRYSTALS-Kyber 
-following (at the time of writing) the most recent 
+Ce dépôt contient une implémentation en Python pur de CRYSTALS-Kyber, suivant (au moment de l'écriture) la version la plus récente.
 [specification](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf)
 (v3.02)
 
-## Disclaimer
+## Avertissement
 
-:warning: **Under no circumstances should this be used for a cryptographic application.** :warning:
+:warning: **En aucun cas ceci ne doit être utilisé pour une application cryptographique.** :warning:
 
-I have written `kyber-py` as a way to learn about the way Kyber works, and to
-try and create a clean, well commented implementation which people can learn 
-from.
-
-This code is not constant time, or written to be performant. Rather, it was 
-written so that reading though Algorithms 1-9 in the 
+Ce code n'est pas en temps constant et n'a pas été écrit pour être performant. 
+Il a été écrit afin de pouvoir lire et comprendre les Algorithmes 1 à 9 dans la
 [specification](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf)
-closely matches the code which is seen in `kyber.py`.
+Ceci se rapproche étroitement du code qui est visible dans kyber.py.
 
 ### KATs
 
-This implementation currently passes all KAT tests from the reference implementation. 
-For more information, see the unit tests in [`test_kyber.py`](test_kyber.py).
+Cette implémentation réussit actuellement tous les tests KAT de l'implémentation de référence.
+Pour plus d'informations, consultez les tests unitaires dans[`test_kyber.py`](test_kyber.py).
 
-**Note**: there is a discrepancy between the specification and reference implementation.
-To ensure all KATs pass, I have to generate the public key **before** the random
-bytes $z = \mathcal{B}^{32}$ in algorithm 7 of the 
+**Note**: Il y a une divergence entre la spécification et l'implémentation de référence. 
+Pour garantir que tous les tests KAT réussissent, 
+je dois générer la clé publique avant les octets aléatoires $z = \mathcal{B}^{32}$ dans l'algorithme 7 de la
 [specification](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf)
 (v3.02).
 
-### Dependencies
+### Dependences
 
-Originally this was planned to have zero dependencies, however to make this work
-pass the KATs, I needed a deterministic CSRNG. The reference implementation uses
-AES256 CTR DRBG. I have implemented this in [`aes256_ctr_drbg.py`](aes256_ctr_drbg.py). 
-However, I have not implemented AES itself, instead I import this from `pycryptodome`.
+À l'origine, il était prévu que cela n'ait aucune dépendance, cependant pour que cela fonctionne et réussisse les KATs, 
+j'avais besoin d'un Générateur de Nombres Aléatoires Cryptographiquement Sécurisé (CSRNG) déterministe. 
+L'implémentation de référence utilise AES256 CTR DRBG. J'ai implémenté cela dans aes256_ctr_drbg.py. 
+Cependant, je n'ai pas implémenté AES lui-même, je l'importe plutôt depuis pycryptodome.
+Pour installer les dépendances, exécutez pip -r install requirements."
 
-To install dependencies, run `pip -r install requirements`.
+Si vous êtes prêt à utiliser l'aléatoire du système (os.urandom), 
+vous n'avez pas besoin de cette dépendance.
 
-If you're happy to use system randomness (`os.urandom`) then you don't need
-this dependency.
+## Utilisation de kyber-p
 
-## Using kyber-py
+Il y a trois fonctions exposées sur la classe Kyber qui sont destinées à être utilisées :
 
-There are three functions exposed on the `Kyber` class which are intended
-for use:
-
-- `Kyber.keygen()`: generate a keypair `(pk, sk)`
-- `Kyber.enc(pk)`: generate a challenge and a shared key `(c, K)`
-- `Kyber.dec(c, sk)`: generate the shared key `K`
-
-To use `Kyber()` it must be initialised with a dictionary of the 
-protocol parameters. An example can be seen in `DEFAULT_PARAMETERS`.
-
-Additionally, the class has been initialised with these default parameters, 
-so you can simply import the NIST level you want to play with:
-
-#### Example
+-Kyber.keygen(): génère une paire de clés (pk, sk)
+-Kyber.enc(pk): génère un défi et une clé partagée (c, K)
+-Kyber.dec(c, sk): génère la clé partagée K
+Pour utiliser Kyber(), il doit être initialisé avec un dictionnaire des paramètres du protocole. 
+Un exemple peut être vu dans DEFAULT_PARAMETERS.
+#### Exemple
 
 ```python
 >>> from kyber import Kyber512
@@ -70,7 +58,7 @@ The above example would also work with `Kyber768` and `Kyber1024`.
 
 ### Benchmarks
 
-**TODO**: Better benchmarks? Although this was never about speed haha.
+**TODO**: Des meilleures mesures de performances ? Même si cela n'a jamais été une question de vitesse haha
 
 For now, here are some approximate benchmarks:
 
@@ -80,45 +68,35 @@ For now, here are some approximate benchmarks:
 | `Enc()`                  | 10.677s  | 16.094s  | 22.341s   |
 | `Dec()`                  | 16.822s  | 25.979s  | 33.524s   |
 
-All times recorded using a Intel Core i7-9750H CPU. 
+Tous les temps enregistrés ont été obtenus en utilisant un processeur 
+Intel(R) Core(TM) i5-6300U CPU @ 2.40GHz, 2501 MHz, 2 cœur(s), 4 processeur(s) logique(s)
+ 
 
-## Future Plans
+## Projets Futurs
 
-* Add documentation on `NTT` transform for polynomials
-* Add documentation for working with DRBG and setting the seed
+* Ajouter de la documentation sur la transformation NTT pour les polynômes
+* Ajouter de la documentation sur le fonctionnement du DRBG et le paramétrage de la graine
 
-### Include Dilithium
 
-Using [`polynomials.py`](polynomials.py) and [`modules.py`](modules.py) 
-this work could be extended to
-have a pure python implementation of CRYSTALS-Dilithium too.
-
-I suppose then this repo should be called `crystals-py` but I wont
-get ahead of myself.
-
-## Discussion of Implementation
+## Discussion de l'Implementation
 
 ### Kyber
 
 ```
 TODO:
 
-Add some more information about how working with Kyber works with this
-library...
+Pour étendre la discussion sur la façon dont le travail avec Kyber fonctionne avec cette bibliothèque, vous pouvez inclure les éléments suivants :
 ```
 
 ### Polynomials
 
-The file [`polynomials.py`](polynomials.py) contains the classes 
-`PolynomialRing` and 
-`Polynomial`. This implements the univariate polynomial ring
-
+Le fichier polynomials.py contient les classes PolynomialRing et Polynomial. Cela met en œuvre l'anneau de polynômes univariés.
 $$
 R_q = \mathbb{F}_q[X] /(X^n + 1) 
 $$
 
-The implementation is inspired by `SageMath` and you can create the
-ring $R_{11} = \mathbb{F}_{11}[X] /(X^8 + 1)$ in the following way:
+L'implémentation est inspirée par SageMath et vous pouvez créer l'anneau
+$R_{11} = \mathbb{F}_{11}[X] /(X^8 + 1)$ de la manière suivante:
 
 #### Example
 
